@@ -1,5 +1,5 @@
 [package]
-name = "test-rust"
+name = "grid-pathfinding"
 version = "0.1.0"
 authors = ["Nicolas Bonnet <mail@nicolasbon.net>"]
 edition = "2018"
