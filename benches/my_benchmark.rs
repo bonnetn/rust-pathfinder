@@ -34,7 +34,7 @@ fn find_in_snail_map(c: &mut Criterion) {
 
     c.bench_function("find path", |b| {
         b.iter(|| {
-            grid_pathfinding\::find_path(
+            grid_pathfinding::find_path(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),
@@ -49,7 +49,7 @@ fn find_in_empty_map(c: &mut Criterion) {
 
     c.bench_function("find path", |b| {
         b.iter(|| {
-            grid_pathfinding\::find_path(
+            grid_pathfinding::find_path(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),

@@ -17,67 +17,86 @@ struct Pathfinder<'a> {
     start: &'a Ix2,
     end: &'a Ix2,
 
-    distance_to_origin: Array2<f64>,
-    prev: Array2<Option<Ix2>>,
-    heap: BinaryHeap<HeapElement>,
+    open_set: BinaryHeap<HeapElement>,
+    came_from: Array2<Option<Ix2>>,
+    g_score: Array2<f64>,
+    f_score: Array2<f64>,
+}
+
+fn distance(a: &Ix2, b: &Ix2) -> i32 {
+    let (ax, ay) = (a[0] as i32, a[1] as i32);
+    let (bx, by) = (b[0] as i32, b[1] as i32);
+    return (ax - bx).abs() + (ay - by).abs();
 }
 
 impl<'a> Pathfinder<'a> {
     fn new(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Pathfinder<'a> {
-        let distance_to_origin = Array::from_elem(obstacles.raw_dim(), INFINITY);
-        let prev = Array::from_elem(obstacles.raw_dim(), None);
-        let heap = BinaryHeap::new();
+        let open_set = BinaryHeap::new();
+        let came_from = Array::from_elem(obstacles.raw_dim(), None);
+        let g_score = Array::from_elem(obstacles.raw_dim(), INFINITY);
+        let f_score = Array::from_elem(obstacles.raw_dim(), INFINITY);
 
-        Pathfinder { distance_to_origin, obstacles, prev, heap, start, end }
+        Pathfinder {
+            obstacles,
+            start,
+            end,
+            open_set,
+            came_from,
+            g_score,
+            f_score,
+        }
+    }
+
+
+    fn h(&self, position: &Ix2) -> f64 {
+        return distance(self.end, position) as f64;
+        //return 0.;
     }
 
     fn find_path(&mut self) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
-        self.distance_to_origin[*self.end] = 0.;
-        self.heap.push(HeapElement { distance: 0., position: *self.end });
+        self.open_set.push(HeapElement {
+            position: *self.start,
+            f_score: self.h(self.start),
+        });
+        self.g_score[*self.start] = 0.;
+        self.f_score[*self.start] = self.h(self.start);
 
-        while let Some(HeapElement { position, distance }) = self.heap.pop() {
-            self.visit(position, distance);
-            if position == *self.start {
+        while let Some(HeapElement { position, f_score }) = self.open_set.pop() {
+            if f_score != self.f_score[position] { continue; }
+
+            self.visit(position);
+
+            if position == *self.end {
                 return Ok(self.build_path());
             }
         }
         return Err(Box::new(NoPathFoundError()));
     }
 
-    fn visit(&mut self, position: Ix2, distance: f64) {
-        let cost = self.distance_to_origin[position];
-        if cost < distance {
-            return; // Already a better alternative was calculated.
-        }
+    fn visit(&mut self, current: Ix2) {
+        for neighbor in get_neighbors(&current, self.obstacles.dim()) {
+            if self.obstacles[neighbor] { continue; }
+            let tentative_g_score = self.g_score[current] + 1.;
+            if tentative_g_score < self.g_score[neighbor] {
+                self.came_from[neighbor] = Some(current);
+                self.g_score[neighbor] = tentative_g_score;
 
-
-        for n in get_neighbors(&position, self.distance_to_origin.dim()) {
-            if !self.obstacles[n] {
-                self.add_to_visit_heap(n, distance + 1., position)
+                let f_score = tentative_g_score + self.h(&neighbor);
+                self.f_score[neighbor] = f_score;
+                self.open_set.push(HeapElement { position: neighbor, f_score });
             }
         };
     }
 
-    fn add_to_visit_heap(&mut self, position: Ix2, distance: f64, previous_pos: Ix2) {
-        let cost = self.distance_to_origin[position];
-        if cost > distance {
-            self.distance_to_origin[position] = distance;
-            self.prev[position] = Some(previous_pos);
-            self.heap.push(HeapElement {
-                distance,
-                position,
-            });
-        }
-    }
-
     fn build_path(&self) -> Vec<Ix2> {
-        let start = *self.start;
-        let mut path = vec![start];
-        let mut pos = start;
-        while pos != *self.end {
-            pos = self.prev[pos].unwrap();
+        let end = *self.end;
+        let mut path = vec![end];
+        let mut pos = end;
+        while pos != *self.start {
+            pos = self.came_from[pos].unwrap();
             path.push(pos);
         }
+        path.reverse();
         path
     }
 }
