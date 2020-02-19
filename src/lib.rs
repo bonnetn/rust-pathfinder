@@ -1,6 +1,6 @@
 use ndarray::{ArrayView2,Ix2};
 
-mod queue;
+mod heap;
 mod errors;
 mod pathfinder;
 mod neighbors;

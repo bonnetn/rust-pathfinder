@@ -1,5 +1,5 @@
 use std::collections::BinaryHeap;
-use crate::queue::HeapElement;
+use crate::heap::HeapElement;
 use crate::errors::NoPathFoundError;
 use crate::neighbors::get_neighbors;
 use ndarray::{Array, Array2, Ix2, ArrayView2};
