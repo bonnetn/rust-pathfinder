@@ -5,6 +5,12 @@ use crate::neighbors::get_neighbors;
 use ndarray::{Array, Array2, Ix2, ArrayView2};
 use std::f64::INFINITY;
 
+pub(crate) fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
+    if obstacles[*start] || obstacles[*end] {
+        return Err(Box::new(NoPathFoundError()));
+    }
+    Pathfinder::new(obstacles, start, end).find_path()
+}
 
 struct Pathfinder<'a> {
     obstacles: ArrayView2<'a, bool>,
@@ -77,12 +83,6 @@ impl<'a> Pathfinder<'a> {
 }
 
 
-pub(crate) fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
-    if obstacles[*start] || obstacles[*end] {
-        return Err(Box::new(NoPathFoundError()));
-    }
-    Pathfinder::new(obstacles, start, end).find_path()
-}
 
 
 
