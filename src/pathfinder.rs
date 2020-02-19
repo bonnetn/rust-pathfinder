@@ -38,8 +38,8 @@ impl<'a> Pathfinder<'a> {
 
         Pathfinder {
             obstacles,
-            start,
-            end,
+            start:end, // Swapping start and end for more efficient path reconstruction.
+            end:start,
             open_set,
             came_from,
             g_score,
@@ -96,7 +96,6 @@ impl<'a> Pathfinder<'a> {
             pos = self.came_from[pos].unwrap();
             path.push(pos);
         }
-        path.reverse();
         path
     }
 }

@@ -1,6 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ndarray::{Array2,Ix2};
-use grid_pathfinding::find_path;
 
 fn make_wall(obstacles: &mut Array2<bool>, x: usize) {
     let (_, height) = obstacles.dim();
