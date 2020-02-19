@@ -1,6 +1,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ndarray::{Array2,Ix2};
 
+const WIDTH: usize = 300;
+const HEIGHT: usize = 200;
+
 fn make_wall(obstacles: &mut Array2<bool>, x: usize) {
     let (_, height) = obstacles.dim();
     for y in 0..height {
@@ -9,7 +12,7 @@ fn make_wall(obstacles: &mut Array2<bool>, x: usize) {
 }
 
 fn make_snail_obstacle_map(start: &Ix2, end: &Ix2) -> Array2<bool> {
-    let mut arr = Array2::from_elem((100, 100), false);
+    let mut arr = Array2::from_elem((WIDTH, HEIGHT), false);
 
     let (width, height) = arr.dim();
     for x in (0..width).step_by(4) {
@@ -27,7 +30,7 @@ fn make_snail_obstacle_map(start: &Ix2, end: &Ix2) -> Array2<bool> {
 }
 
 fn find_in_snail_map(c: &mut Criterion) {
-    let start = Ix2(99, 99);
+    let start = Ix2(WIDTH-1, HEIGHT-1);
     let end = Ix2(0, 0);
     let obstacles = make_snail_obstacle_map(&start, &end);
 
@@ -42,9 +45,9 @@ fn find_in_snail_map(c: &mut Criterion) {
     });
 }
 fn find_in_empty_map(c: &mut Criterion) {
-    let start = Ix2(99, 99);
+    let start = Ix2(WIDTH-1, HEIGHT-1);
     let end = Ix2(0, 0);
-    let obstacles = Array2::from_elem((100,100), false);
+    let obstacles = Array2::from_elem((WIDTH,HEIGHT), false);
 
     c.bench_function("find path", |b| {
         b.iter(|| {
