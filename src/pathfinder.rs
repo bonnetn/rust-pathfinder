@@ -31,7 +31,7 @@ fn distance(a: &Ix2, b: &Ix2) -> i32 {
 
 impl<'a> Pathfinder<'a> {
     fn new(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Pathfinder<'a> {
-        let open_set = BinaryHeap::new();
+        let open_set = BinaryHeap::with_capacity(1024);
         let came_from = Array::from_elem(obstacles.raw_dim(), None);
         let g_score = Array::from_elem(obstacles.raw_dim(), INFINITY);
         let f_score = Array::from_elem(obstacles.raw_dim(), INFINITY);
