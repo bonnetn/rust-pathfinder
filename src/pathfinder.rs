@@ -6,6 +6,7 @@ use ndarray::{Array, Array2, Ix2, ArrayView2};
 use std::f64::INFINITY;
 use bresenham::Bresenham;
 use std::iter::once;
+use std::cmp::Ordering::Equal;
 
 pub(crate) fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     if obstacles[*start] || obstacles[*end] {
@@ -69,7 +70,17 @@ impl<'a> Pathfinder<'a> {
         while let Some(HeapElement { position, f_score }) = self.open_set.pop() {
             if f_score != self.f_score[position] { continue; }
 
-            if line_of_sight(&parent, &neighbor, &self.obstacles) && line_of_sight(&parent, &neighbor, &self.obstacles) {
+            let parent = self.came_from[position].unwrap();
+            if !line_of_sight(&position, &parent, &self.obstacles) {
+                let (neighbor, g_score) = get_neighbors(&position, self.obstacles.dim())
+                    .map(|pos| (pos, self.g_score[pos]))
+                    .min_by(|(_, x), (_, y)| x.partial_cmp(y).unwrap_or(Equal))
+                    .unwrap();
+
+                self.g_score[position] = g_score + 1.;
+                self.came_from[position] = Some(neighbor);
+            }
+
             self.visit(position, heuristic);
 
             if position == *end {
@@ -84,26 +95,14 @@ impl<'a> Pathfinder<'a> {
             if self.obstacles[neighbor] { continue; }
 
             let parent = self.came_from[current].unwrap();
-            if line_of_sight(&parent, &neighbor, &self.obstacles) && line_of_sight(&parent, &neighbor, &self.obstacles) {
-                let tentative_g_score = self.g_score[parent] + euclidean_distance(&current, &parent);
-                if tentative_g_score < self.g_score[neighbor] {
-                    self.came_from[neighbor] = Some(parent);
-                    self.g_score[neighbor] = tentative_g_score;
+            let tentative_g_score = self.g_score[parent] + euclidean_distance(&current, &parent);
+            if tentative_g_score < self.g_score[neighbor] {
+                self.came_from[neighbor] = Some(parent);
+                self.g_score[neighbor] = tentative_g_score;
 
-                    let f_score = tentative_g_score + heuristic(&neighbor);
-                    self.f_score[neighbor] = f_score;
-                    self.open_set.push(HeapElement { position: neighbor, f_score });
-                }
-            } else {
-                let tentative_g_score = self.g_score[current] + 1.;
-                if tentative_g_score < self.g_score[neighbor] {
-                    self.came_from[neighbor] = Some(current);
-                    self.g_score[neighbor] = tentative_g_score;
-
-                    let f_score = tentative_g_score + heuristic(&neighbor);
-                    self.f_score[neighbor] = f_score;
-                    self.open_set.push(HeapElement { position: neighbor, f_score });
-                }
+                let f_score = tentative_g_score + heuristic(&neighbor);
+                self.f_score[neighbor] = f_score;
+                self.open_set.push(HeapElement { position: neighbor, f_score });
             }
         };
     }

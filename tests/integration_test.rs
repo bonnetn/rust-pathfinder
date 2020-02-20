@@ -1,14 +1,6 @@
 #[cfg(test)]
 use grid_pathfinding::find_path;
 use ndarray::{Array2, Ix2};
-use bresenham::Bresenham;
-
-fn distance(a: &Ix2, b: &Ix2) -> i32 {
-    let (ax, ay) = (a[0] as i32, a[1] as i32);
-    let (bx, by) = (b[0] as i32, b[1] as i32);
-    return (ax - bx).abs() + (ay - by).abs();
-}
-
 
 #[test]
 fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +21,7 @@ fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
     arr[Ix2(4, 4)] = true;
 
     let got = find_path(arr.view(), &start, &end)?;
-    assert_eq!(got, vec![Ix2(0, 5), Ix2(1, 0), Ix2(3,0), Ix2(3,5), Ix2(5, 5)]);
+    assert_eq!(vec![Ix2(0, 5), Ix2(1, 0), Ix2(3, 0), Ix2(3, 5), Ix2(5, 5)], got);
     Ok(())
 }
 
