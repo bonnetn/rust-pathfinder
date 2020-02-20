@@ -58,7 +58,7 @@ impl<'a> Pathfinder<'a> {
 
 
     fn find_path(&mut self, start: &Ix2, end: &Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
-        let heuristic = |pos: &Ix2| euclidean_distance(pos, end) as f64;
+        let heuristic = |pos: &Ix2| euclidean_distance(pos, end);
         self.open_set.push(HeapElement {
             position: *start,
             f_score: heuristic(start),
@@ -95,7 +95,7 @@ impl<'a> Pathfinder<'a> {
             if self.obstacles[neighbor] { continue; }
 
             let parent = self.came_from[current].unwrap();
-            let tentative_g_score = self.g_score[parent] + euclidean_distance(&current, &parent);
+            let tentative_g_score = self.g_score[parent] + euclidean_distance(&neighbor, &parent);
             if tentative_g_score < self.g_score[neighbor] {
                 self.came_from[neighbor] = Some(parent);
                 self.g_score[neighbor] = tentative_g_score;
