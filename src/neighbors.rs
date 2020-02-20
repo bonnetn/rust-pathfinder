@@ -20,7 +20,26 @@ fn down(pos: Ix2, _: &(usize, usize)) -> Option<Ix2> {
     Some(pos - Ix2(0, 1))
 }
 
-const NEIGHBOR_FUNCS: [fn(Ix2, &(usize, usize)) -> Option<Ix2>; 4] = [right, up, left, down];
+fn upright(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
+    right(up(pos, shape)?, shape)
+}
+
+fn upleft(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
+    left(up(pos, shape)?, shape)
+}
+
+fn downright(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
+    right(down(pos, shape)?, shape)
+}
+
+fn downleft(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
+    left(down(pos, shape)?, shape)
+}
+
+const NEIGHBOR_FUNCS: [fn(Ix2, &(usize, usize)) -> Option<Ix2>; 8] = [
+    right, up, left, down,
+    upright, upleft, downleft, downright,
+];
 
 
 pub(crate) fn get_neighbors<'a>(pos: &'a Ix2, shape: (usize, usize)) -> impl Iterator<Item=Ix2> + 'a {
