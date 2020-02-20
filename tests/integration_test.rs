@@ -28,12 +28,12 @@ fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
 #[test]
 fn happy_path_no_obstacle() -> Result<(), Box<dyn std::error::Error>> {
     let start = Ix2(1, 0);
-    let end = Ix2(1, 4);
+    let end = Ix2(4, 4);
 
     let arr = Array2::from_elem((5, 5), false);
 
     let got = find_path(arr.view(), &start, &end)?;
-    let want = vec![Ix2(1, 0), Ix2(1, 4)];
+    let want = vec![Ix2(1, 0), Ix2(4, 4)];
     assert_eq!(got, want);
     Ok(())
 }
