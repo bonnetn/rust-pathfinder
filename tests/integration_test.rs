@@ -1,6 +1,7 @@
 #[cfg(test)]
 use grid_pathfinding::find_path;
 use ndarray::{Array2, Ix2};
+use rand::Rng;
 
 #[test]
 fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,7 +22,7 @@ fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
     arr[Ix2(4, 4)] = true;
 
     let got = find_path(arr.view(), &start, &end)?;
-    assert_eq!(vec![Ix2(0, 5), Ix2(1, 0), Ix2(3, 0), Ix2(3, 5), Ix2(5, 5)], got);
+    assert_eq!(vec![Ix2(0, 5), Ix2(2, 0), Ix2(3, 1), Ix2(4, 5), Ix2(5, 5)], got);
     Ok(())
 }
 
@@ -77,3 +78,4 @@ fn start_is_in_obstacle() {
     let result = find_path(arr.view(), &start, &end);
     assert_eq!(true, result.is_err())
 }
+

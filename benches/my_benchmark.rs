@@ -1,5 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use ndarray::{Array2,Ix2};
+use ndarray::{Array2, Ix2};
+use rand::Rng;
 
 const WIDTH: usize = 300;
 const HEIGHT: usize = 200;
@@ -30,11 +31,11 @@ fn make_snail_obstacle_map(start: &Ix2, end: &Ix2) -> Array2<bool> {
 }
 
 fn find_in_snail_map(c: &mut Criterion) {
-    let start = Ix2(WIDTH-1, HEIGHT-1);
+    let start = Ix2(WIDTH - 1, HEIGHT - 1);
     let end = Ix2(0, 0);
     let obstacles = make_snail_obstacle_map(&start, &end);
 
-    c.bench_function("find path", |b| {
+    c.bench_function("find path with snail map", |b| {
         b.iter(|| {
             grid_pathfinding::find_path(
                 black_box(obstacles.view()),
@@ -44,12 +45,13 @@ fn find_in_snail_map(c: &mut Criterion) {
         })
     });
 }
+
 fn find_in_empty_map(c: &mut Criterion) {
-    let start = Ix2(WIDTH-1, HEIGHT-1);
+    let start = Ix2(WIDTH - 1, HEIGHT - 1);
     let end = Ix2(0, 0);
-    let obstacles = Array2::from_elem((WIDTH,HEIGHT), false);
+    let obstacles = Array2::from_elem((WIDTH, HEIGHT), false);
 
-    c.bench_function("find path", |b| {
+    c.bench_function("find path in empty map", |b| {
         b.iter(|| {
             grid_pathfinding::find_path(
                 black_box(obstacles.view()),
@@ -60,5 +62,31 @@ fn find_in_empty_map(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, find_in_empty_map, find_in_snail_map);
+fn random_map(c: &mut Criterion) {
+    let start = Ix2(WIDTH - 1, HEIGHT - 1);
+    let end = Ix2(0, 0);
+
+    let obstacles = {
+        let mut arr = Array2::from_elem((WIDTH, HEIGHT), false);
+        let mut rng = rand::thread_rng();
+        for cell in arr.iter_mut() {
+            *cell = rng.gen_bool(0.3);
+        }
+        arr[start] = false;
+        arr[end] = false;
+        arr
+    };
+
+    c.bench_function("find path in random map", |b| {
+        b.iter(|| {
+            grid_pathfinding::find_path(
+                black_box(obstacles.view()),
+                black_box(&start),
+                black_box(&end),
+            )
+        })
+    });
+}
+
+criterion_group!(benches, find_in_empty_map, find_in_snail_map, random_map);
 criterion_main!(benches);

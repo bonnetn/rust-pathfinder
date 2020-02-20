@@ -27,7 +27,6 @@ fn line_of_sight(a: &Ix2, b: &Ix2, obstacles: &ArrayView2<bool>) -> bool {
     let start = (a[0] as isize, a[1] as isize);
     let end = (b[0] as isize, b[1] as isize);
     return !Bresenham::new(start, end)
-        .chain(Bresenham::new(end, start))
         .map(|(x, y)| Ix2(x as usize, y as usize))
         .chain(once(*b))
         .map(|pos| obstacles[pos])
