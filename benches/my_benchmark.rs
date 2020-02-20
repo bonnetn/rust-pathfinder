@@ -13,7 +13,7 @@ fn make_wall(obstacles: &mut Array2<bool>, x: usize) {
 }
 
 fn make_snail_obstacle_map(start: &Ix2, end: &Ix2) -> Array2<bool> {
-    let mut arr = Array2::from_elem((WIDTH, HEIGHT), false);
+    let mut arr = Array2::from_elem((50, 50), false);
 
     let (width, height) = arr.dim();
     for x in (0..width).step_by(4) {
@@ -31,11 +31,11 @@ fn make_snail_obstacle_map(start: &Ix2, end: &Ix2) -> Array2<bool> {
 }
 
 fn find_in_snail_map(c: &mut Criterion) {
-    let start = Ix2(WIDTH - 1, HEIGHT - 1);
+    let start = Ix2(49, 49);
     let end = Ix2(0, 0);
     let obstacles = make_snail_obstacle_map(&start, &end);
 
-    c.bench_function("find path with snail map", |b| {
+    c.bench_function("find path with snail map (50x50)", |b| {
         b.iter(|| {
             grid_pathfinding::find_path(
                 black_box(obstacles.view()),
@@ -79,11 +79,12 @@ fn random_map(c: &mut Criterion) {
 
     c.bench_function("find path in random map", |b| {
         b.iter(|| {
-            grid_pathfinding::find_path(
+            let result = grid_pathfinding::find_path(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),
-            )
+            );
+            assert_eq!(false, result.is_err() );
         })
     });
 }
