@@ -4,6 +4,8 @@ use crate::errors::NoPathFoundError;
 use crate::neighbors::get_neighbors;
 use ndarray::{Array, Array2, Ix2, ArrayView2};
 use std::f64::INFINITY;
+use bresenham::Bresenham;
+use std::iter::once;
 
 pub(crate) fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     if obstacles[*start] || obstacles[*end] {
@@ -20,10 +22,21 @@ struct Pathfinder<'a> {
     f_score: Array2<f64>,
 }
 
-fn taxicab_distance(a: &Ix2, b: &Ix2) -> i32 {
-    let (ax, ay) = (a[0] as i32, a[1] as i32);
-    let (bx, by) = (b[0] as i32, b[1] as i32);
-    return (ax - bx).abs() + (ay - by).abs();
+fn line_of_sight(a: &Ix2, b: &Ix2, obstacles: &ArrayView2<bool>) -> bool {
+    let start = (a[0] as isize, a[1] as isize);
+    let end = (b[0] as isize, b[1] as isize);
+    return !Bresenham::new(start, end)
+        .chain(Bresenham::new(end, start))
+        .map(|(x, y)| Ix2(x as usize, y as usize))
+        .chain(once(*b))
+        .map(|pos| obstacles[pos])
+        .any(|has_obstacle| has_obstacle);
+}
+
+fn euclidean_distance(a: &Ix2, b: &Ix2) -> f64 {
+    let (ax, ay) = (a[0] as f64, a[1] as f64);
+    let (bx, by) = (b[0] as f64, b[1] as f64);
+    return ((ax - bx) * (ax - bx) + (ay - by) * (ay - by)).sqrt();
 }
 
 impl<'a> Pathfinder<'a> {
@@ -44,18 +57,19 @@ impl<'a> Pathfinder<'a> {
 
 
     fn find_path(&mut self, start: &Ix2, end: &Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
-        let heuristic = |pos: &Ix2| taxicab_distance(pos, end) as f64;
-
+        let heuristic = |pos: &Ix2| euclidean_distance(pos, end) as f64;
         self.open_set.push(HeapElement {
             position: *start,
             f_score: heuristic(start),
         });
         self.g_score[*start] = 0.;
         self.f_score[*start] = heuristic(start);
+        self.came_from[*start] = Some(*start);
 
         while let Some(HeapElement { position, f_score }) = self.open_set.pop() {
             if f_score != self.f_score[position] { continue; }
 
+            if line_of_sight(&parent, &neighbor, &self.obstacles) && line_of_sight(&parent, &neighbor, &self.obstacles) {
             self.visit(position, heuristic);
 
             if position == *end {
@@ -68,14 +82,28 @@ impl<'a> Pathfinder<'a> {
     fn visit<Func: Fn(&Ix2) -> f64>(&mut self, current: Ix2, heuristic: Func) {
         for neighbor in get_neighbors(&current, self.obstacles.dim()) {
             if self.obstacles[neighbor] { continue; }
-            let tentative_g_score = self.g_score[current] + 1.;
-            if tentative_g_score < self.g_score[neighbor] {
-                self.came_from[neighbor] = Some(current);
-                self.g_score[neighbor] = tentative_g_score;
 
-                let f_score = tentative_g_score + heuristic(&neighbor);
-                self.f_score[neighbor] = f_score;
-                self.open_set.push(HeapElement { position: neighbor, f_score });
+            let parent = self.came_from[current].unwrap();
+            if line_of_sight(&parent, &neighbor, &self.obstacles) && line_of_sight(&parent, &neighbor, &self.obstacles) {
+                let tentative_g_score = self.g_score[parent] + euclidean_distance(&current, &parent);
+                if tentative_g_score < self.g_score[neighbor] {
+                    self.came_from[neighbor] = Some(parent);
+                    self.g_score[neighbor] = tentative_g_score;
+
+                    let f_score = tentative_g_score + heuristic(&neighbor);
+                    self.f_score[neighbor] = f_score;
+                    self.open_set.push(HeapElement { position: neighbor, f_score });
+                }
+            } else {
+                let tentative_g_score = self.g_score[current] + 1.;
+                if tentative_g_score < self.g_score[neighbor] {
+                    self.came_from[neighbor] = Some(current);
+                    self.g_score[neighbor] = tentative_g_score;
+
+                    let f_score = tentative_g_score + heuristic(&neighbor);
+                    self.f_score[neighbor] = f_score;
+                    self.open_set.push(HeapElement { position: neighbor, f_score });
+                }
             }
         };
     }

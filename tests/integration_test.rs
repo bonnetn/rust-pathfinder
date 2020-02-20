@@ -1,6 +1,7 @@
 #[cfg(test)]
 use grid_pathfinding::find_path;
-use ndarray::{Array2, Ix2, ArrayView2};
+use ndarray::{Array2, Ix2};
+use bresenham::Bresenham;
 
 fn distance(a: &Ix2, b: &Ix2) -> i32 {
     let (ax, ay) = (a[0] as i32, a[1] as i32);
@@ -8,31 +9,27 @@ fn distance(a: &Ix2, b: &Ix2) -> i32 {
     return (ax - bx).abs() + (ay - by).abs();
 }
 
-fn assert_valid_path(path: &[Ix2], start: &Ix2, end: &Ix2, obstacles: ArrayView2<bool>) {
-    assert_eq!(path.is_empty(), false);
-    assert_eq!(path.first().unwrap(), start);
-    assert_eq!(path.last().unwrap(), end);
-    for window in path.windows(2) {
-        assert_eq!(false, obstacles[window[0]]);
-        assert_eq!(false, obstacles[window[1]]);
-        assert_eq!(1, distance(&window[0], &window[1]))
-    }
-}
 
 #[test]
 fn happy_path_obstacles() -> Result<(), Box<dyn std::error::Error>> {
-    let start = Ix2(1, 0);
-    let end = Ix2(1, 4);
+    let start = Ix2(0, 5);
+    let end = Ix2(5, 5);
 
-    let mut arr = Array2::from_elem((5, 5), false);
-    arr[Ix2(0, 2)] = true;
-    arr[Ix2(1, 2)] = true;
+    let mut arr = Array2::from_elem((6, 6), false);
+    arr[Ix2(2, 1)] = true;
     arr[Ix2(2, 2)] = true;
-    arr[Ix2(3, 2)] = true;
+    arr[Ix2(2, 3)] = true;
+    arr[Ix2(2, 4)] = true;
+    arr[Ix2(2, 5)] = true;
+
+    arr[Ix2(4, 0)] = true;
+    arr[Ix2(4, 1)] = true;
+    arr[Ix2(4, 2)] = true;
+    arr[Ix2(4, 3)] = true;
+    arr[Ix2(4, 4)] = true;
 
     let got = find_path(arr.view(), &start, &end)?;
-    assert_eq!(got.len(), 11);
-    assert_valid_path(&got, &start, &end, arr.view());
+    assert_eq!(got, vec![Ix2(0, 5), Ix2(1, 0), Ix2(3,0), Ix2(3,5), Ix2(5, 5)]);
     Ok(())
 }
 
@@ -44,9 +41,8 @@ fn happy_path_no_obstacle() -> Result<(), Box<dyn std::error::Error>> {
     let arr = Array2::from_elem((5, 5), false);
 
     let got = find_path(arr.view(), &start, &end)?;
-    let want = vec![Ix2(1, 0), Ix2(1, 1), Ix2(1, 2), Ix2(1, 3), Ix2(1, 4)];
+    let want = vec![Ix2(1, 0), Ix2(1, 4)];
     assert_eq!(got, want);
-    assert_valid_path(&got, &start, &end, arr.view());
     Ok(())
 }
 
