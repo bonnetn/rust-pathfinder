@@ -109,9 +109,6 @@ impl<'a> Pathfinder<'a> {
 }
 
 
-
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -191,5 +188,4 @@ mod tests {
         let result = find_path(arr.view(), &start, &end);
         assert_eq!(true, result.is_err())
     }
-
 }
