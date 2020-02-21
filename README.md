@@ -14,5 +14,5 @@ Install pipenv.
 pipenv
 pipenv shell
 maturin develop
-python pathfinding_python/main.py
+python python_example/main.py
 ```
