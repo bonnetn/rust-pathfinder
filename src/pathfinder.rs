@@ -13,6 +13,9 @@ pub fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a I
     if obstacles[*start] || obstacles[*end] {
         return Err(Box::new(NoPathFoundError()));
     }
+    if line_of_sight(start, end, &obstacles) {
+        return Ok(vec![*start, *end]);
+    }
     Pathfinder::new(obstacles).find_path(end, start)
 }
 
