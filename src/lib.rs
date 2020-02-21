@@ -1,4 +1,4 @@
-use ndarray::{ArrayView2, Ix2};
+use ndarray::Ix2;
 use numpy::PyArray2;
 use pyo3::exceptions;
 use pyo3::prelude::*;
@@ -10,18 +10,27 @@ mod neighbors;
 mod line_of_sight;
 mod pathfinder;
 
-pub fn find_path_impl<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
-    pathfinder::find_path(
-        obstacles.view(),
-        &start,
-        &end,
-    )
+fn is_in_bounds((x, y): (usize, usize), (max_x, max_y): (usize, usize)) -> bool {
+    x < max_x && y < max_y
 }
 
 #[pyfunction]
 fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usize)) -> PyResult<Vec<(usize, usize)>> {
     let obstacles = obstacles.as_array();
-    let result = match find_path_impl(obstacles, &Ix2(start.0, start.1), &Ix2(end.0, end.1)) {
+
+    if !is_in_bounds(start, obstacles.dim()) {
+        return Err(exceptions::ValueError::py_err("start position not in bounds".to_string()));
+    }
+
+    if !is_in_bounds(end, obstacles.dim()) {
+        return Err(exceptions::ValueError::py_err("end position not in bounds".to_string()));
+    }
+
+    let result = match pathfinder::find_path(
+        obstacles.view(),
+        &Ix2(start.0, start.1),
+        &Ix2(end.0, end.1),
+    ) {
         Ok(r) => r,
         Err(e) => return Err(exceptions::RuntimeError::py_err(e.to_string())),
     };
