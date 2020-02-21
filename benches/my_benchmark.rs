@@ -1,3 +1,4 @@
+extern crate grid_pathfinding;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ndarray::{Array2, Ix2};
 use rand::Rng;

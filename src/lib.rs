@@ -13,9 +13,10 @@ mod pathfinder;
 fn is_in_bounds((x, y): (usize, usize), (max_x, max_y): (usize, usize)) -> bool {
     x < max_x && y < max_y
 }
+pub use pathfinder::find_path as find_path_impl;
 
 #[pyfunction]
-fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usize)) -> PyResult<Vec<(usize, usize)>> {
+pub fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usize)) -> PyResult<Vec<(usize, usize)>> {
     let obstacles = obstacles.as_array();
 
     if !is_in_bounds(start, obstacles.dim()) {
@@ -26,7 +27,7 @@ fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usi
         return Err(exceptions::ValueError::py_err("end position not in bounds".to_string()));
     }
 
-    let result = match pathfinder::find_path(
+    let result = match find_path_impl(
         obstacles.view(),
         &Ix2(start.0, start.1),
         &Ix2(end.0, end.1),

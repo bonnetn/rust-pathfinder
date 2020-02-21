@@ -9,7 +9,7 @@ use crate::heap::HeapElement;
 use crate::line_of_sight::line_of_sight;
 use crate::neighbors::get_neighbors;
 
-pub(crate) fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
+pub fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     if obstacles[*start] || obstacles[*end] {
         return Err(Box::new(NoPathFoundError()));
     }
