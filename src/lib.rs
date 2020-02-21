@@ -1,13 +1,14 @@
 use ndarray::{ArrayView2, Ix2};
-use pyo3::prelude::*;
-use pyo3::wrap_pyfunction;
 use numpy::PyArray2;
 use pyo3::exceptions;
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
 
 mod heap;
 mod errors;
-mod pathfinder;
 mod neighbors;
+mod line_of_sight;
+mod pathfinder;
 
 pub fn find_path_impl<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     pathfinder::find_path(

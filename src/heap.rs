@@ -30,3 +30,30 @@ impl PartialEq for HeapElement {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use std::cmp::Ordering::{Greater, Less};
+
+    use super::*;
+
+    fn heap_element() -> (HeapElement, HeapElement) {
+        (HeapElement { f_score: 0.0, position: Ix2(1, 1) },
+         HeapElement { f_score: 1.0, position: Ix2(0, 0) })
+    }
+
+    #[test]
+    fn test_heap_element_partial_ordering() {
+        let (elem_a, elem_b) = heap_element();
+        assert_eq!(elem_a.partial_cmp(&elem_b), Some(Greater));
+        assert_eq!(elem_b.partial_cmp(&elem_a), Some(Less));
+        assert_eq!(elem_a.partial_cmp(&elem_a), Some(Equal));
+    }
+
+    #[test]
+    fn test_heap_element_ordering() {
+        let (elem_a, elem_b) = heap_element();
+        assert_eq!(elem_a.partial_cmp(&elem_b), Some(Greater));
+        assert_eq!(elem_b.partial_cmp(&elem_a), Some(Less));
+        assert_eq!(elem_a.partial_cmp(&elem_a), Some(Equal));
+    }
+}
