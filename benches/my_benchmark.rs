@@ -37,7 +37,7 @@ fn find_in_snail_map(c: &mut Criterion) {
 
     c.bench_function("find path with snail map (50x50)", |b| {
         b.iter(|| {
-            grid_pathfinding::find_path(
+            grid_pathfinding::find_path_impl(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),
@@ -53,7 +53,7 @@ fn find_in_empty_map(c: &mut Criterion) {
 
     c.bench_function("find path in empty map", |b| {
         b.iter(|| {
-            grid_pathfinding::find_path(
+            grid_pathfinding::find_path_impl(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),
@@ -79,7 +79,7 @@ fn random_map(c: &mut Criterion) {
 
     c.bench_function("find path in random map", |b| {
         b.iter(|| {
-            let result = grid_pathfinding::find_path(
+            let result = grid_pathfinding::find_path_impl(
                 black_box(obstacles.view()),
                 black_box(&start),
                 black_box(&end),

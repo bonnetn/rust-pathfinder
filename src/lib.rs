@@ -9,7 +9,7 @@ mod errors;
 mod pathfinder;
 mod neighbors;
 
-pub fn _find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
+pub fn find_path_impl<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     pathfinder::find_path(
         obstacles.view(),
         &start,
@@ -20,7 +20,7 @@ pub fn _find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a 
 #[pyfunction]
 fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usize)) -> PyResult<Vec<(usize, usize)>> {
     let obstacles = obstacles.as_array();
-    let result = match _find_path(obstacles, &Ix2(start.0, start.1), &Ix2(end.0, end.1)) {
+    let result = match find_path_impl(obstacles, &Ix2(start.0, start.1), &Ix2(end.0, end.1)) {
         Ok(r) => r,
         Err(e) => return Err(exceptions::RuntimeError::py_err(e.to_string())),
     };
