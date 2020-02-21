@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bc7e66f6a26742e21d302e533ffeb1e4665a7a5e43d6d51b4f3be34fab2cfc5e"
+            "sha256": "dfe9ab93d937caf35b912c93074f0157ac060aa381f5cc39e19db5318926b648"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -16,6 +16,13 @@
         ]
     },
     "default": {
+        "bresenham": {
+            "hashes": [
+                "sha256:c076b8bf730adb65cc5037d26639a5629dd63f6c1481d80b6856c99d47a1c6bf"
+            ],
+            "index": "pypi",
+            "version": "==0.2.1"
+        },
         "numpy": {
             "hashes": [
                 "sha256:1786a08236f2c92ae0e70423c45e1e62788ed33028f94ca99c4df03f5be6b3c6",
