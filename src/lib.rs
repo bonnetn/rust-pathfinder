@@ -14,6 +14,7 @@ fn is_in_bounds((x, y): (usize, usize), (max_x, max_y): (usize, usize)) -> bool 
     x < max_x && y < max_y
 }
 pub use pathfinder::find_path as find_path_impl;
+pub use pathfinder::exit_red_zone as exit_red_zone_impl;
 
 #[pyfunction]
 pub fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize, usize)) -> PyResult<Vec<(usize, usize)>> {
@@ -42,11 +43,29 @@ pub fn find_path(obstacles: &PyArray2<bool>, start: (usize, usize), end: (usize,
 
     Ok(result)
 }
+#[pyfunction]
+pub fn exit_red_zone(obstacles: &PyArray2<bool>, start: (usize, usize)) -> PyResult<(usize, usize)> {
+    let obstacles = obstacles.as_array();
+
+    if !is_in_bounds(start, obstacles.dim()) {
+        return Err(exceptions::ValueError::py_err("start position not in bounds".to_string()));
+    }
+
+    let result = match exit_red_zone_impl(
+        obstacles.view(),
+        &Ix2(start.0, start.1),
+    ) {
+        Ok(r) => r,
+        Err(e) => return Err(exceptions::RuntimeError::py_err(e.to_string())),
+    };
+    Ok((result[0], result[1]))
+}
 
 /// This module is a python module implemented in Rust.
 #[pymodule]
 fn grid_pathfinding(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(find_path))?;
+    m.add_wrapped(wrap_pyfunction!(exit_red_zone))?;
 
     Ok(())
 }

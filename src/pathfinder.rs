@@ -9,6 +9,29 @@ use crate::heap::HeapElement;
 use crate::line_of_sight::line_of_sight;
 use crate::neighbors::get_neighbors;
 
+pub fn exit_red_zone<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2) -> Result<Ix2, Box<dyn std::error::Error>> {
+    let mut already_added_to_queue = Array::from_elem(obstacles.raw_dim(), false);
+    if !obstacles[*start] {
+        return Ok(*start);
+    }
+    let mut q = BinaryHeap::with_capacity(1024);
+    q.push(HeapElement { f_score: 0.0, position: *start });
+
+    while let Some(HeapElement { position, f_score }) = q.pop() {
+        if !obstacles[position] {
+            return Ok(position);
+        }
+
+        for n in get_neighbors(&position, obstacles.dim()) {
+            if !already_added_to_queue[n] {
+                q.push(HeapElement { f_score: euclidean_distance(&position, &n), position: n });
+                already_added_to_queue[n] = true;
+            }
+        }
+    }
+    Err(Box::new(NoPathFoundError()))
+}
+
 pub fn find_path<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2, end: &'a Ix2) -> Result<Vec<Ix2>, Box<dyn std::error::Error>> {
     if obstacles[*start] || obstacles[*end] {
         return Err(Box::new(NoPathFoundError()));

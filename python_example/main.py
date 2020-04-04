@@ -55,3 +55,6 @@ if __name__ == '__main__':
         cur = path[i]
         path2 += bresenham(*cur, *prev)
     print_grid(arr, start, end, path2)
+
+    exit_point = grid_pathfinding.exit_red_zone(arr, (4,4))
+    print_grid(arr, (4,4), exit_point, [])
