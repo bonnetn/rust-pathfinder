@@ -93,7 +93,7 @@ impl<'a> Pathfinder<'a> {
                     .min_by(|(_, x), (_, y)| x.partial_cmp(y).unwrap_or(Equal))
                     .unwrap();
 
-                self.g_score[position] = g_score + 1.;
+                self.g_score[position] = g_score + euclidean_distance(&position, &neighbor) + heuristic(&position);
                 self.came_from[position] = Some(neighbor);
             }
 
@@ -111,12 +111,12 @@ impl<'a> Pathfinder<'a> {
             if self.obstacles[neighbor] { continue; }
 
             let parent = self.came_from[current].unwrap();
-            let tentative_g_score = self.g_score[parent] + euclidean_distance(&neighbor, &parent);
+            let tentative_g_score = self.g_score[parent] + euclidean_distance(&neighbor, &parent) + heuristic(&neighbor);
             if tentative_g_score < self.g_score[neighbor] {
                 self.came_from[neighbor] = Some(parent);
                 self.g_score[neighbor] = tentative_g_score;
 
-                let f_score = tentative_g_score + heuristic(&neighbor);
+                let f_score = tentative_g_score + heuristic(&neighbor) * 2.;
                 self.f_score[neighbor] = f_score;
                 self.open_set.push(HeapElement { position: neighbor, f_score });
             }
@@ -158,7 +158,7 @@ mod tests {
         arr[Ix2(4, 4)] = true;
 
         let got = find_path(arr.view(), &start, &end)?;
-        assert_eq!(vec![Ix2(0, 5), Ix2(2, 0), Ix2(3, 1), Ix2(4, 5), Ix2(5, 5)], got);
+        assert_eq!(vec![Ix2(0, 5), Ix2(2, 0), Ix2(3, 1), Ix2(3, 5), Ix2(5, 5)], got);
         Ok(())
     }
 
