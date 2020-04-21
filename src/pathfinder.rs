@@ -24,7 +24,7 @@ pub fn exit_red_zone<'a>(obstacles: ArrayView2<'a, bool>, start: &'a Ix2) -> Res
 
         for n in get_neighbors(&position, obstacles.dim()) {
             if !already_added_to_queue[n] {
-                q.push(HeapElement { f_score: euclidean_distance(&position, &n), position: n });
+                q.push(HeapElement { f_score: euclidean_distance(&start, &n), position: n });
                 already_added_to_queue[n] = true;
             }
         }
