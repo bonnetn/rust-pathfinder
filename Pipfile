@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 numpy = "*"
 bresenham = "*"
+maturin = "*"
 
 [requires]
 python_version = "3.7"
