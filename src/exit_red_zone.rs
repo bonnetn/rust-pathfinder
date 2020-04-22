@@ -15,7 +15,7 @@ pub fn exit_red_zone_impl(map: &impl Map, start: &Point2D) -> Result<Point2D, Bo
     let mut q = BinaryHeap::with_capacity(1024);
     q.push(HeapElement { f_score: 0.0, position: *start });
 
-    while let Some(HeapElement { position, f_score }) = q.pop() {
+    while let Some(HeapElement { position, f_score: _ }) = q.pop() {
         if !map.obstacle(&position) {
             return Ok(position);
         }
@@ -42,6 +42,10 @@ mod tests {
     impl Map for StubMap {
         fn obstacle(&self, point: &Point2D) -> bool {
             self.exit_cell.is_none() || self.exit_cell.unwrap() != *point
+        }
+
+        fn line_of_sight(&self, _: &(isize, isize), _: &(isize, isize)) -> bool {
+            false
         }
     }
 

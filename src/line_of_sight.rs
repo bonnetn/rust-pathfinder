@@ -2,13 +2,13 @@ use std::iter::once;
 
 use bresenham::Bresenham;
 
-use crate::map::Map;
+use crate::grid::Grid;
 use crate::point::Point2D;
 
-pub fn line_of_sight(start: &Point2D, end: &Point2D, map: &impl Map) -> bool {
+pub fn line_of_sight(start: &Point2D, end: &Point2D, obstacles: &Grid<bool>) -> bool {
     !Bresenham::new(*start, *end)
         .chain(once(*end))
-        .map(|pos| map.obstacle(&pos))
+        .map(|pos| obstacles.get(&pos))
         .any(|has_obstacle| has_obstacle)
 }
 
@@ -17,7 +17,6 @@ mod tests {
     use ndarray::Array2;
 
     use crate::grid::Grid;
-    use crate::map::GridMap;
 
     use super::*;
 
@@ -28,7 +27,7 @@ mod tests {
         assert_eq!(line_of_sight(
             &(0, 0),
             &(9, 9),
-            &GridMap::new(Grid::from(obstacles)),
+            &Grid::from(obstacles),
         ), true);
     }
 
@@ -44,7 +43,7 @@ mod tests {
         assert_eq!(line_of_sight(
             &(0, 0),
             &(9, 9),
-            &GridMap::new(Grid::from(obstacles)),
+            &Grid::from(obstacles),
         ), false);
     }
 }

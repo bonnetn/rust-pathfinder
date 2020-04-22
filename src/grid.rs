@@ -91,7 +91,7 @@ mod tests {
     #[test]
     fn test_bounded() -> Result<(), Box<dyn std::error::Error>> {
         let bounds = ((-1, 2), (3, 4));
-        let mut grid = Grid::new(bounds, 0);
+        let grid = Grid::new(bounds, 0);
 
         assert_eq!(grid.boundaries(), bounds);
 
