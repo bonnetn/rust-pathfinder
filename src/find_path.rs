@@ -64,7 +64,7 @@ fn do_find_path(map: &impl Map, start: Point2D, end: Point2D) -> Result<Vec<Poin
 
                 let new_f_score = tentative_g_score + heuristic(&neighbor) * 2.;
                 f_score.set(&neighbor, new_f_score);
-                open_set.push(HeapElement { position: neighbor, f_score: elem_f_score });
+                open_set.push(HeapElement { position: neighbor, f_score: new_f_score });
             }
         };
 
