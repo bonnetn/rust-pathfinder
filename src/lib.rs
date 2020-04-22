@@ -4,9 +4,9 @@ use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
 use crate::exit_red_zone::exit_red_zone_impl;
-use crate::find_path::find_path_impl;
-use crate::grid::Grid;
-use crate::map::{Bounded, GridMap};
+pub use crate::find_path::find_path_impl;
+pub use crate::grid::Grid;
+pub use crate::map::{Bounded, GridMap};
 use crate::point::{is_in_bounds, Point2D};
 
 mod errors;
