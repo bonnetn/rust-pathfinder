@@ -1,20 +1,18 @@
 use std::cmp::Ordering;
 use std::cmp::Ordering::Equal;
 
-use ndarray::Ix2;
-
-pub struct HeapElement {
+pub struct HeapElement<T> {
     pub f_score: f64,
-    pub position: Ix2,
+    pub position: T,
 }
 
-impl PartialOrd for HeapElement {
+impl<T> PartialOrd for HeapElement<T> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.f_score.partial_cmp(&other.f_score)?.reverse())
     }
 }
 
-impl Ord for HeapElement {
+impl<T> Ord for HeapElement<T> {
     fn cmp(&self, other: &Self) -> Ordering {
         self.f_score.partial_cmp(&other.f_score)
             .unwrap_or_else(|| { Equal })
@@ -22,9 +20,9 @@ impl Ord for HeapElement {
     }
 }
 
-impl Eq for HeapElement {}
+impl<T> Eq for HeapElement<T> {}
 
-impl PartialEq for HeapElement {
+impl<T> PartialEq for HeapElement<T> {
     fn eq(&self, other: &Self) -> bool {
         self.f_score.eq(&other.f_score)
     }
@@ -36,9 +34,9 @@ mod tests {
 
     use super::*;
 
-    fn heap_element() -> (HeapElement, HeapElement) {
-        (HeapElement { f_score: 0.0, position: Ix2(1, 1) },
-         HeapElement { f_score: 1.0, position: Ix2(0, 0) })
+    fn heap_element() -> (HeapElement<i32>, HeapElement<i32>) {
+        (HeapElement { f_score: 0.0, position: 42 },
+         HeapElement { f_score: 1.0, position: 64 })
     }
 
     #[test]

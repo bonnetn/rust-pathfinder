@@ -1,42 +1,46 @@
-use ndarray::Ix2;
+use crate::point::Point2D;
 
-fn right(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    if pos[0] + 1 >= shape.0 { return None; }
-    Some(pos + Ix2(1, 0))
+fn right((pos_x, pos_y): &Point2D, (_, max): &(Point2D, Point2D)) -> Option<Point2D> {
+    let (bound, _) = max;
+    if *pos_x + 1 >= *bound { return None; }
+    Some((pos_x + 1, *pos_y))
 }
 
-fn up(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    if pos[1] + 1 >= shape.1 { return None; }
-    Some(pos + Ix2(0, 1))
+fn up((pos_x, pos_y): &Point2D, (_, max): &(Point2D, Point2D)) -> Option<Point2D> {
+    let (_, bound) = max;
+    if *pos_y + 1 >= *bound { return None; }
+    Some((*pos_x, pos_y + 1))
 }
 
-fn left(pos: Ix2, _: &(usize, usize)) -> Option<Ix2> {
-    if pos[0] == 0 { return None; }
-    Some(pos - Ix2(1, 0))
+fn left((pos_x, pos_y): &Point2D, (min, _): &(Point2D, Point2D)) -> Option<Point2D> {
+    let (bound, _) = min;
+    if *pos_x - 1 < *bound { return None; }
+    Some((pos_x - 1, *pos_y))
 }
 
-fn down(pos: Ix2, _: &(usize, usize)) -> Option<Ix2> {
-    if pos[1] == 0 { return None; }
-    Some(pos - Ix2(0, 1))
+fn down((pos_x, pos_y): &Point2D, (min, _): &(Point2D, Point2D)) -> Option<Point2D> {
+    let (_, bound) = min;
+    if *pos_y - 1 < *bound { return None; }
+    Some((*pos_x, pos_y - 1))
 }
 
-fn upright(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    right(up(pos, shape)?, shape)
+fn upright(pos: &Point2D, boundaries: &(Point2D, Point2D)) -> Option<Point2D> {
+    right(&up(pos, boundaries)?, boundaries)
 }
 
-fn upleft(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    left(up(pos, shape)?, shape)
+fn upleft(pos: &Point2D, boundaries: &(Point2D, Point2D)) -> Option<Point2D> {
+    left(&up(pos, boundaries)?, boundaries)
 }
 
-fn downright(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    right(down(pos, shape)?, shape)
+fn downright(pos: &Point2D, boundaries: &(Point2D, Point2D)) -> Option<Point2D> {
+    right(&down(pos, boundaries)?, boundaries)
 }
 
-fn downleft(pos: Ix2, shape: &(usize, usize)) -> Option<Ix2> {
-    left(down(pos, shape)?, shape)
+fn downleft(pos: &Point2D, boundaries: &(Point2D, Point2D)) -> Option<Point2D> {
+    left(&down(pos, boundaries)?, boundaries)
 }
 
-type GetNeighborFunc = fn(Ix2, &(usize, usize)) -> Option<Ix2>;
+type GetNeighborFunc = fn(&Point2D, &(Point2D, Point2D)) -> Option<Point2D>;
 
 const NEIGHBOR_FUNCS: [GetNeighborFunc; 8] = [
     right, up, left, down,
@@ -44,9 +48,9 @@ const NEIGHBOR_FUNCS: [GetNeighborFunc; 8] = [
 ];
 
 
-pub(crate) fn get_neighbors<'a>(pos: &'a Ix2, shape: (usize, usize)) -> impl Iterator<Item=Ix2> + 'a {
+pub(crate) fn get_neighbors(pos: Point2D, boundaries: (Point2D, Point2D)) -> impl Iterator<Item=Point2D> {
     NEIGHBOR_FUNCS.iter()
-        .filter_map(move |func| func(*pos, &shape))
+        .filter_map(move |func| func(&pos, &boundaries))
 }
 
 #[cfg(test)]
@@ -55,7 +59,7 @@ mod tests {
 
     use super::*;
 
-    fn assert_same_elements(got: &HashSet<Ix2>, want: &[Ix2]) {
+    fn assert_same_elements(got: &HashSet<Point2D>, want: &[Point2D]) {
         assert_eq!(got.len(), want.len());
         for pos in want.iter() {
             assert_eq!(got.contains(&pos), true);
@@ -64,38 +68,38 @@ mod tests {
 
     #[test]
     fn test_neighbors_happy_path() {
-        let neighbors: HashSet<Ix2> = get_neighbors(&Ix2(1, 1), (100, 100)).collect();
+        let neighbors: HashSet<Point2D> = get_neighbors((1, 1), ((0, 0), (100, 100))).collect();
         let want = [
-            Ix2(2, 1),
-            Ix2(1, 2),
-            Ix2(0, 1),
-            Ix2(1, 0),
-            Ix2(2, 2),
-            Ix2(0, 2),
-            Ix2(0, 0),
-            Ix2(2, 0),
+            (2, 1),
+            (1, 2),
+            (0, 1),
+            (1, 0),
+            (2, 2),
+            (0, 2),
+            (0, 0),
+            (2, 0),
         ];
         assert_same_elements(&neighbors, &want);
     }
 
     #[test]
     fn test_neighbors_in_top_left_corner() {
-        let neighbors: HashSet<Ix2> = get_neighbors(&Ix2(99, 99), (100, 100)).collect();
+        let neighbors: HashSet<Point2D> = get_neighbors((99, 99), ((0, 0), (100, 100))).collect();
         let want = [
-            Ix2(98, 99),
-            Ix2(99, 98),
-            Ix2(98, 98),
+            (98, 99),
+            (99, 98),
+            (98, 98),
         ];
         assert_same_elements(&neighbors, &want);
     }
 
     #[test]
     fn test_neighbors_in_bottom_right_corner() {
-        let neighbors: HashSet<Ix2> = get_neighbors(&Ix2(0, 0), (100, 100)).collect();
+        let neighbors: HashSet<Point2D> = get_neighbors((0, 0), ((0, 0), (100, 100))).collect();
         let want = [
-            Ix2(1, 1),
-            Ix2(1, 0),
-            Ix2(0, 1),
+            (1, 1),
+            (1, 0),
+            (0, 1),
         ];
         assert_same_elements(&neighbors, &want);
     }
