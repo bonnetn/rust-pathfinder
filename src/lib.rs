@@ -12,6 +12,7 @@ mod errors;
 mod exit_red_zone;
 mod grid;
 mod heap;
+mod line_of_sight;
 mod map;
 mod neighbors;
 mod point;
